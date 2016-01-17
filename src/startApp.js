@@ -3,8 +3,8 @@ import Rx from 'rx';
 import mixin from 'react-mixin';
 import { StateStreamMixin } from 'rx-react';
 
-export function dispatch(address, type) {
-  return () => address.onNext({ type });
+export function dispatch(address$, type) {
+  return () => address$.onNext({ type });
 }
 
 export function forwardTo(address, type, args){
@@ -48,6 +48,6 @@ export default class StartApp extends Component {
     const { view } = this.props;
     const { address$, model } = this.state;
 
-    return view({ address$, model });
+    return view(address$, model);
   }
 }

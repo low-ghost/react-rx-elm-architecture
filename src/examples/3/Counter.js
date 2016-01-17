@@ -25,23 +25,12 @@ export const update = createReducer({
 });
 
 //view : Signal.Address Action -> Model -> Int -> Html
-export function view(address$, model, key = 0) {
+export function view({ address$, model, key = 0 }) {
   return (
     <div key={key}>
       <button onClick={dispatch(address$, DECREMENT)}>-</button>
       <h2>{model}</h2>
       <button onClick={dispatch(address$, INCREMENT)}>+</button>
-    </div>
-  );
-}
-
-export function viewWithRemoveButton(context, model, key = 0) {
-  return (
-    <div key={key}>
-      <button onClick={dispatch(context.actions$, DECREMENT)}>-</button>
-      <h2>{model}</h2>
-      <button onClick={dispatch(context.actions$, INCREMENT)}>+</button>
-      <button onClick={dispatch(context.remove$)}>X</button>
     </div>
   );
 }

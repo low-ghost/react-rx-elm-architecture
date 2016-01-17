@@ -34,7 +34,7 @@ export const update = createReducer({
   [REMOVE](action, model) {
     return {
       ...model,
-      counters: R.filter(([id, _]) => action.id !== id, model.counters)
+      counters: R.init(model.counters)
     };
   },
 
@@ -56,20 +56,16 @@ export const update = createReducer({
 
 //viewCounter : Signal.Address Action -> (ID, Counter.Model) -> Html
 function viewCounter(address$) {
-  return ([ id, model ]) => {
-    const context = {
-      actions$: forwardTo(address$, MODIFY, { id }),
-      remove$: forwardTo(address$, REMOVE, { id })
-    };
-    return Counter.viewWithRemoveButton(context, model, id);
-  };
+  return ([ id, model ]) =>
+    Counter.view({ address$: forwardTo(address$, MODIFY, { id }), model, id });
 }
 
 //view : Signal.Address Action -> Model -> Html
-export function view(address$, model) {
+export function view({ address$, model }) {
   const counters = R.map(viewCounter(address$), model.counters);
   return (
     <div>
+      <button onClick={dispatch(address$, REMOVE)}>Remove</button>
       <button onClick={dispatch(address$, INSERT)}>Add</button>
       {counters}
     </div>
