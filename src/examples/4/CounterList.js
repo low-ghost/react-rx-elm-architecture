@@ -61,12 +61,12 @@ function viewCounter(address$) {
       actions$: forwardTo(address$, MODIFY, { id }),
       remove$: forwardTo(address$, REMOVE, { id })
     };
-    return Counter.viewWithRemoveButton(context, model, id);
+    return <Counter.ViewWithRemoveButton context={context} model={model} key={id} />;
   };
 }
 
 //view : Signal.Address Action -> Model -> Html
-export function view(address$, model) {
+export function View({ address$, model }) {
   const counters = R.map(viewCounter(address$), model.counters);
   return (
     <div>

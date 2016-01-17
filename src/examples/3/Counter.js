@@ -25,9 +25,9 @@ export const update = createReducer({
 });
 
 //view : Signal.Address Action -> Model -> Int -> Html
-export function view({ address$, model, key = 0 }) {
+export function View({ address$, model }) {
   return (
-    <div key={key}>
+    <div>
       <button onClick={dispatch(address$, DECREMENT)}>-</button>
       <h2>{model}</h2>
       <button onClick={dispatch(address$, INCREMENT)}>+</button>

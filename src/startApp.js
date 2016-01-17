@@ -45,9 +45,9 @@ export default class StartApp extends Component {
 
   render(){
 
-    const { view } = this.props;
+    const { View } = this.props;
     const { address$, model } = this.state;
 
-    return view(address$, model);
+    return <View address$={address$} model={model} />;
   }
 }

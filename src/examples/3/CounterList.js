@@ -57,11 +57,14 @@ export const update = createReducer({
 //viewCounter : Signal.Address Action -> (ID, Counter.Model) -> Html
 function viewCounter(address$) {
   return ([ id, model ]) =>
-    Counter.view({ address$: forwardTo(address$, MODIFY, { id }), model, id });
+    <Counter.View
+        address$={forwardTo(address$, MODIFY, { id })}
+        model={model}
+        key={id} />;
 }
 
 //view : Signal.Address Action -> Model -> Html
-export function view({ address$, model }) {
+export function View({ address$, model }) {
   const counters = R.map(viewCounter(address$), model.counters);
   return (
     <div>
