@@ -36,21 +36,11 @@ export default class StartApp extends Component {
     const { update, init } = this.props;
 
     const address$ = new Rx.Subject();
-    return Rx.Observable.just(init("funny cats"))
+
+    return Rx.Observable.just(init)
       .merge(address$)
-      //-- updateStep : action -> (model, Effects action) -> (model, Effects action)
-      .scan(([ model, _ ], action) => update(action, model))
-      .map(([ model, effects ]) => {
-        if (typeof effects.action === 'function') {
-          address$.onNext({ type: effects.type, ...effects.action() });
-        }
-        if (effects.action instanceof Rx.Observable) {
-          effects.action.subscribe(
-            result => address$.onNext({ type: effects.type, result }),
-            console.error.bind(console));
-        }
-        return ({ address$, model });
-      });
+      .scan((model, action) => update(action, model))
+      .map(model => ({ address$, model }));
   }
 
   render(){
@@ -61,7 +51,3 @@ export default class StartApp extends Component {
     return <View address$={address$} model={model} />;
   }
 }
-
-export const Effects = {
-  none: 0
-};

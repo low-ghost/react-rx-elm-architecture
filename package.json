@@ -50,6 +50,7 @@
     "webpack-hot-middleware": "^2.6.0"
   },
   "dependencies": {
+    "isomorphic-fetch": "^2.2.1",
     "ramda": "^0.19.1",
     "react": "^0.14.3",
     "react-dom": "^0.14.3",
