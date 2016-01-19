@@ -4,6 +4,13 @@ import fetch from 'isomorphic-fetch';
 import { dispatch, forwardTo, createReducer, Effects } from './startApp';
 import * as RandomGif from './RandomGif';
 
+
+//type Action = RequestMore | NewGif
+const NEW_GIF = 'NEW_GIF';
+
+const LEFT = 'LEFT';
+const RIGHT = 'RIGHT';
+
 //init : String -> (Model, Effects Action)
 export let init = topic => () => [{
   left: {
@@ -20,7 +27,7 @@ export let init = topic => () => [{
 function getRandomGif(topic) {
   const encodedTopic = encodeURIComponent(topic);
   return {
-    type: NEW_GIF,
+    type: LEFT + NEW_GIF,
     action: Rx.Observable.fromPromise(
       fetch(`http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=${encodedTopic}`)
         .then(decodeUrl)),
@@ -36,36 +43,37 @@ function decodeUrl(response) {
   return response.json()
     .then(R.path(['data', 'image_url']));
 }
-
-//type Action = RequestMore | NewGif
-const REQUEST_MORE = 'REQUEST_MORE';
-const NEW_GIF = 'NEW_GIF';
-
-const LEFT = 'LEFT';
-const RIGHT = 'RIGHT';
-
 //update : Action -> Model -> (Model, Effects Action)
 export const update = createReducer({
 
   [LEFT](action, model) {
     const [ left, fx ] = RandomGif.update(action.action, model.left);
-    return [ { left, right: model.right }, fx ];
+    const newFx = { ...fx, type: LEFT + fx.type }
+    return [ { left, right: model.right }, newFx ];
   },
 
   [RIGHT](action, model) {
     const [ right, fx ] = RandomGif.update(action.action, model.right);
-    return [ { right, left: model.left }, fx ]
+    const newFx = { ...fx, type: RIGHT + fx.type }
+    return [ { right, left: model.left }, newFx ]
   },
 
-  [NEW_GIF](action, model) {
+  [LEFT + NEW_GIF](action, model) {
     //if left
+    const [left, effect] = RandomGif.update({ type: NEW_GIF, result: action.result }, model.left);
     return [{
       ...model,
-      left: {
-        gifUrl: action.result,
-        topic: model.left.topic,
-      }
-    }, Effects.none];
+      left
+    }, effect];
+  },
+
+  [RIGHT + NEW_GIF](action, model) {
+    //if left
+    const [right, effect] = RandomGif.update({ type: NEW_GIF, result: action.result }, model.right);
+    return [{
+      ...model,
+      right
+    }, effect];
   },
 
 });

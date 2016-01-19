@@ -43,6 +43,7 @@ export const update = createReducer({
   },
 
   [NEW_GIF](action, model) {
+    console.log('bottom')
     return [{
       ...model,
       gifUrl: action.result
@@ -69,7 +70,6 @@ export function View({ address$, model }) {
 
   return (
     <div style={{ width: 200 }}>
-        <p>test</p>
       <h2 style={headerStyle}>{model.topic}</h2>
       <img style={imgStyle} />
       <button onClick={dispatch(address$, REQUEST_MORE)}>More Please</button>

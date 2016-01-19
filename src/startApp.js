@@ -9,11 +9,20 @@ export function dispatch(address$, type) {
 
 export function forwardTo(address$, type, args = {}){
   let forward$ = new Rx.Subject();
-  forward$.subscribe(action => address$.onNext({
-    action,
-    type,
-    ...args
-  }));
+  forward$.subscribe(action => {
+    console.log('action=======', action);
+
+    //if (action instanceof Rx.Observable) {
+      //action.subscribe(
+        //result => address$.onNext({ type: effects.type, result }),
+        //console.error.bind(console));
+    //}
+    return address$.onNext({
+      action,
+      type,
+      ...args
+    });
+  });
   return forward$;
 }
 
