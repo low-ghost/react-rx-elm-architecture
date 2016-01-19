@@ -7,14 +7,14 @@ export function dispatch(address$, type) {
   return () => address$.onNext({ type });
 }
 
-export function forwardTo(address, type, args){
-  let forward = new Rx.Subject();
-  forward.subscribe(action => address.onNext({
+export function forwardTo(address$, type, args = {}){
+  let forward$ = new Rx.Subject();
+  forward$.subscribe(action => address$.onNext({
     action,
     type,
     ...args
   }));
-  return forward;
+  return forward$;
 }
 
 /**
@@ -36,7 +36,7 @@ export default class StartApp extends Component {
     const { update, init } = this.props;
 
     const address$ = new Rx.Subject();
-    return Rx.Observable.just(init("funny cats"))
+    return Rx.Observable.just(init())
       .merge(address$)
       //-- updateStep : action -> (model, Effects action) -> (model, Effects action)
       .scan(([ model, _ ], action) => update(action, model))

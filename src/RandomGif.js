@@ -4,7 +4,7 @@ import fetch from 'isomorphic-fetch';
 import { dispatch, forwardTo, createReducer, Effects } from './startApp';
 
 //init : String -> (Model, Effects Action)
-export let init = topic => [{
+export let init = topic => () => [{
   gifUrl: 'assets/waiting.gif',
   topic,
 }, getRandomGif(topic)];
@@ -38,6 +38,7 @@ const NEW_GIF = 'NEW_GIF';
 export const update = createReducer({
 
   [REQUEST_MORE](action, model) {
+    console.log('req', model)
     return [ model, getRandomGif(model.topic) ];
   },
 
@@ -68,6 +69,7 @@ export function View({ address$, model }) {
 
   return (
     <div style={{ width: 200 }}>
+        <p>test</p>
       <h2 style={headerStyle}>{model.topic}</h2>
       <img style={imgStyle} />
       <button onClick={dispatch(address$, REQUEST_MORE)}>More Please</button>
