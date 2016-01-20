@@ -12,13 +12,12 @@ export let init = topic => () => [{
 //getRandomGif : String -> Effects Action
 export function getRandomGif(topic) {
   const encodedTopic = encodeURIComponent(topic);
-  return {
-    type: NEW_GIF,
-    action: Rx.Observable.fromPromise(
-      fetch(`http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=${encodedTopic}`)
-        .then(decodeUrl)),
-  };
-}
+
+  return Rx.Observable.fromPromise(
+    fetch(`http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=${encodedTopic}`)
+      .then(decodeUrl)
+      .then(R.merge({ type: NEW_GIF })));
+};
 
 //minor difference as json is a promise
 //decodeUrl : String -> Effects Action
@@ -27,7 +26,7 @@ function decodeUrl(response) {
     throw new Error("Hmm, that's not great");
   }
   return response.json()
-    .then(R.path(['data', 'image_url']));
+    .then(R.compose(R.objOf('result'), R.path(['data', 'image_url'])));
 }
 
 //type Action = RequestMore | NewGif
@@ -38,12 +37,10 @@ const NEW_GIF = 'NEW_GIF';
 export const update = createReducer({
 
   [REQUEST_MORE](action, model) {
-    console.log('req', model)
     return [ model, getRandomGif(model.topic) ];
   },
 
   [NEW_GIF](action, model) {
-    console.log('bottom')
     return [{
       ...model,
       gifUrl: action.result

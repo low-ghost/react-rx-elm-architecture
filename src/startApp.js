@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Rx from 'rx';
+import R from 'ramda';
 import mixin from 'react-mixin';
 import { StateStreamMixin } from 'rx-react';
 
@@ -10,13 +11,6 @@ export function dispatch(address$, type) {
 export function forwardTo(address$, type, args = {}){
   let forward$ = new Rx.Subject();
   forward$.subscribe(action => {
-    console.log('action=======', action);
-
-    //if (action instanceof Rx.Observable) {
-      //action.subscribe(
-        //result => address$.onNext({ type: effects.type, result }),
-        //console.error.bind(console));
-    //}
     return address$.onNext({
       action,
       type,
@@ -50,14 +44,8 @@ export default class StartApp extends Component {
       //-- updateStep : action -> (model, Effects action) -> (model, Effects action)
       .scan(([ model, _ ], action) => update(action, model))
       .map(([ model, effects ]) => {
-        if (typeof effects.action === 'function') {
-          address$.onNext({ type: effects.type, ...effects.action() });
-        }
-        if (effects.action instanceof Rx.Observable) {
-          const { action, ...restEffects } = effects;
-          action.subscribe(
-            result => address$.onNext({ type: effects.type, result, ...restEffects }),
-            console.error.bind(console));
+        if (effects instanceof Rx.Observable) {
+          effects.subscribe(r => address$.onNext({ ...r }));
         }
         return ({ address$, model });
       });
@@ -73,5 +61,7 @@ export default class StartApp extends Component {
 }
 
 export const Effects = {
+  map: (f, type, scope) => f.map(R.merge(R.__, { type: `SCOPED_${type}`, scope })),
+  batch: (x, ...xs) => R.reduce((acc, fn) => acc.merge(fn), x, xs),
   none: 0
 };
