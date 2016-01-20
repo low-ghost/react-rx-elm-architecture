@@ -10,7 +10,7 @@ export let init = topic => () => [{
 }, getRandomGif(topic)];
 
 //getRandomGif : String -> Effects Action
-function getRandomGif(topic) {
+export function getRandomGif(topic) {
   const encodedTopic = encodeURIComponent(topic);
   return {
     type: NEW_GIF,

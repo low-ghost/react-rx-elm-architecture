@@ -7,72 +7,42 @@ import * as RandomGif from './RandomGif';
 
 //type Action = RequestMore | NewGif
 const NEW_GIF = 'NEW_GIF';
+const SCOPED = "SCOPED";
+const SCOPED_NEW_GIF = SCOPED + "_" + NEW_GIF;
 
 const LEFT = 'LEFT';
 const RIGHT = 'RIGHT';
 
 //init : String -> (Model, Effects Action)
-export let init = topic => () => [{
-  left: {
-    gifUrl: 'assets/waiting.gif',
-    topic,
-  },
-  right: {
-    gifUrl: 'assets/waiting.gif',
-    topic,
-  }
-}, getRandomGif(topic)];
-
-//getRandomGif : String -> Effects Action
-function getRandomGif(topic) {
-  const encodedTopic = encodeURIComponent(topic);
-  return {
-    type: LEFT + NEW_GIF,
-    action: Rx.Observable.fromPromise(
-      fetch(`http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=${encodedTopic}`)
-        .then(decodeUrl)),
-  };
+export let init = (topicLeft, topicRight) => () => {
+  const [ left, lfx ] = RandomGif.init(topicLeft)();
+  const [ right, rfx ] = RandomGif.init(topicRight)();
+  const leftFx = { ...lfx, type: SCOPED_NEW_GIF, scope: 'left' };
+  const rightFx = { ...rfx, type: SCOPED_NEW_GIF, scope: 'right' };
+  return [{ left, right }, leftFx];
 }
 
-//minor difference as json is a promise
-//decodeUrl : String -> Effects Action
-function decodeUrl(response) {
-  if (response.status >= 400) {
-    throw new Error("Hmm, that's not great");
-  }
-  return response.json()
-    .then(R.path(['data', 'image_url']));
-}
 //update : Action -> Model -> (Model, Effects Action)
 export const update = createReducer({
 
   [LEFT](action, model) {
     const [ left, fx ] = RandomGif.update(action.action, model.left);
-    const newFx = { ...fx, type: LEFT + fx.type }
+    const newFx = { ...fx, type: `${SCOPED}_${fx.type}`, scope: 'left' }
     return [ { left, right: model.right }, newFx ];
   },
 
   [RIGHT](action, model) {
     const [ right, fx ] = RandomGif.update(action.action, model.right);
-    const newFx = { ...fx, type: RIGHT + fx.type }
+    const newFx = { ...fx, type: `${SCOPED}_${fx.type}`, scope: 'right' }
     return [ { right, left: model.left }, newFx ]
   },
 
-  [LEFT + NEW_GIF](action, model) {
-    //if left
-    const [left, effect] = RandomGif.update({ type: NEW_GIF, result: action.result }, model.left);
+  [SCOPED_NEW_GIF](action, model) {
+    const { scope } = action;
+    const [result, effect] = RandomGif.update({ type: NEW_GIF, result: action.result }, model[scope]);
     return [{
       ...model,
-      left
-    }, effect];
-  },
-
-  [RIGHT + NEW_GIF](action, model) {
-    //if left
-    const [right, effect] = RandomGif.update({ type: NEW_GIF, result: action.result }, model.right);
-    return [{
-      ...model,
-      right
+      [scope]: result
     }, effect];
   },
 
@@ -88,6 +58,9 @@ export function View({ address$, model }) {
     </div>
   );
 }
+
+
+
 //import React from 'react';
 //import R from 'ramda';
 //import fetch from 'isomorphic-fetch';

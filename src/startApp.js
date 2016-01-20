@@ -54,8 +54,9 @@ export default class StartApp extends Component {
           address$.onNext({ type: effects.type, ...effects.action() });
         }
         if (effects.action instanceof Rx.Observable) {
-          effects.action.subscribe(
-            result => address$.onNext({ type: effects.type, result }),
+          const { action, ...restEffects } = effects;
+          action.subscribe(
+            result => address$.onNext({ type: effects.type, result, ...restEffects }),
             console.error.bind(console));
         }
         return ({ address$, model });
