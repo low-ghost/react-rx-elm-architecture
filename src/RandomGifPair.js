@@ -38,7 +38,7 @@ export const update = createReducer({
 
   [SCOPED_NEW_GIF](action, model) {
     const { scope } = action;
-    const [result, effect] = RandomGif.update({ type: NEW_GIF, result: action.result }, model[scope]);
+    const [ result, effect ] = RandomGif.update({ type: NEW_GIF, result: action.result }, model[scope]);
     return [ R.set(R.lensProp(scope), result, model), effect ];
   },
 
