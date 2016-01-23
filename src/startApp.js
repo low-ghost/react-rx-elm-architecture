@@ -60,8 +60,10 @@ export default class StartApp extends Component {
   }
 }
 
+// TODO: better none type
+const none = 0;
 export const Effects = {
-  map: (f, type, scope) => f.map(R.merge(R.__, { type: `SCOPED_${type}`, scope })),
+  map: (type, f) => f !== none ? f.map(action => ({ type, action })) : none,
   batch: (x, ...xs) => R.reduce((acc, fn) => acc.merge(fn), x, xs),
-  none: 0
+  none
 };

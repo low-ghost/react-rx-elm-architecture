@@ -4,42 +4,33 @@ import fetch from 'isomorphic-fetch';
 import { dispatch, forwardTo, createReducer, Effects } from './startApp';
 import * as RandomGif from './RandomGif';
 
-const NEW_GIF = 'NEW_GIF';
-
-//type Action = Left | Right | ScopedNewGif
+//type Action = Left | Right
 const LEFT = 'LEFT';
 const RIGHT = 'RIGHT';
-const SCOPED_NEW_GIF = 'SCOPED_' + NEW_GIF;
 
 //init : String -> (Model, Effects Action)
 export let init = (topicLeft, topicRight) => () => {
-  const [ left, lfx ] = RandomGif.init(topicLeft)();
-  const [ right, rfx ] = RandomGif.init(topicRight)();
+  const [ left, leftFx ] = RandomGif.init(topicLeft)();
+  const [ right, rightFx ] = RandomGif.init(topicRight)();
   return [
     { left, right },
     Effects.batch(
-      Effects.map(lfx, NEW_GIF, 'left'),
-      Effects.map(rfx, NEW_GIF, 'right'))
+      Effects.map(LEFT, leftFx),
+      Effects.map(RIGHT, rightFx))
   ];
-}
+};
 
 //update : Action -> Model -> (Model, Effects Action)
 export const update = createReducer({
 
   [LEFT](action, model) {
     const [ left, fx ] = RandomGif.update(action.action, model.left);
-    return [ { left, right: model.right }, Effects.map(fx, NEW_GIF, 'left') ];
+    return [ { left, right: model.right }, Effects.map(LEFT, fx) ];
   },
 
   [RIGHT](action, model) {
     const [ right, fx ] = RandomGif.update(action.action, model.right);
-    return [ { right, left: model.left }, Effects.map(fx, NEW_GIF, 'right') ];
-  },
-
-  [SCOPED_NEW_GIF](action, model) {
-    const { scope } = action;
-    const [ result, effect ] = RandomGif.update({ type: NEW_GIF, result: action.result }, model[scope]);
-    return [ R.set(R.lensProp(scope), result, model), effect ];
+    return [ { right, left: model.left }, Effects.map(RIGHT, fx) ];
   },
 
 });
