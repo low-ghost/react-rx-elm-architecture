@@ -1,7 +1,14 @@
 import React from 'react';
 import R from 'ramda';
 import fetch from 'isomorphic-fetch';
-import { dispatch, forwardTo, createReducer, Effects } from './startApp';
+import {
+    dispatch,
+    forwardTo,
+    createReducer,
+    Effects,
+    toMaybe,
+    maybeWithDefault
+  } from './startApp';
 
 //init : String -> (Model, Effects Action)
 export let init = topic => () => [{
@@ -13,20 +20,26 @@ export let init = topic => () => [{
 export function getRandomGif(topic) {
   const encodedTopic = encodeURIComponent(topic);
 
-  return Rx.Observable.fromPromise(
-    fetch(`http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=${encodedTopic}`)
-      .then(decodeUrl)
-      .then(R.merge({ type: NEW_GIF })));
+  return toMaybe(NEW_GIF,
+    Rx.Observable.just()
+      .flatMap(
+        fetch(`http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=${encodedTopic}`))
+      .flatMap(decodeUrl));
 };
 
+var x = 0;
 //minor difference as json is a promise
 //decodeUrl : String -> Effects Action
 function decodeUrl(response) {
-  if (response.status >= 400) {
-    throw new Error("Hmm, that's not great");
-  }
   return response.json()
-    .then(R.compose(R.objOf('result'), R.path(['data', 'image_url'])));
+    .then((r) => {
+      x++;
+      if (x % 3 === 0)
+        throw new Error("massive error");
+      else
+        return r;
+    })
+    .then(R.path(['data', 'image_url']));
 }
 
 //type Action = RequestMore | NewGif
@@ -43,7 +56,7 @@ export const update = createReducer({
   [NEW_GIF](action, model) {
     return [{
       ...model,
-      gifUrl: action.result
+      gifUrl: maybeWithDefault(model.gifUrl, action.result)
     }, Effects.none];
   },
 
@@ -60,6 +73,7 @@ export function View({ address$, model }) {
     backgroundSize: "cover",
     backgroundImage: `url("${model.gifUrl}")`,
   };
+
   const headerStyle = {
     width: 200,
     textAlign: "center",

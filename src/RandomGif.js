@@ -21,9 +21,10 @@ export function getRandomGif(topic) {
   const encodedTopic = encodeURIComponent(topic);
 
   return toMaybe(NEW_GIF,
-    Rx.Observable.fromPromise(
-      fetch(`http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=${encodedTopic}`)
-        .then(decodeUrl)));
+    Rx.Observable.just()
+      .flatMap(
+        fetch(`http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=${encodedTopic}`))
+      .flatMap(decodeUrl));
 };
 
 var x = 0;

@@ -44,11 +44,7 @@ export const update = createReducer({
     const { id: msgId, action: msg } = action;
     const subUpdate = ({ id, model: randomGif }) => {
       if (id === msgId) {
-        //let [ newRandomGif, fx ] = RandomGif.update(msg, randomGif);
-        const x = RandomGif.update(msg, randomGif);
-        console.log('sub', x)
-        const newRandomGif = x[0];
-        const fx = x[1];
+        let [ newRandomGif, fx ] = RandomGif.update(msg, randomGif);
         return [
           { id, model: newRandomGif },
           Effects.map(SUB_MSG, fx, { id }),
@@ -81,9 +77,10 @@ const inputStyle = {
 
 // elementView : Signal.Address Action -> (Int, RandomGif.Model) -> Html
 function ElementView({ address$, id, model }) {
-  return <RandomGif.View
-    address$={forwardTo(address$, SUB_MSG, { id })}
-    model={model} />;
+  return RandomGif.View({
+    address$: forwardTo(address$, SUB_MSG, { id }),
+    model
+  });
 }
 
 

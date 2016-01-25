@@ -60,18 +60,17 @@ export default class StartApp extends Component {
   }
 }
 
-// TODO: better none type
-const none = 0;
+//explore better none type, maybe and task in algebriac types variation
 export const Effects = {
-  map: (type, f, args = {}) => f !== none ? f.map(action => ({ type, action, ...args })) : none,
+  map: (type, f, args = {}) => f !== Effects.none ? f.map(action => ({ type, action, ...args })) : Effects.none,
   batch: (x, ...xs) => R.reduce((acc, fn) => {
-    if (acc !== none && fn !== none)
+    if (acc !== Effects.none && fn !== Effects.none)
       return acc.merge(fn);
-    if (fn !== none)
+    if (fn !== Effects.none)
       return fn;
     return acc;
   }, x, xs),
-  none
+  none: Symbol('__NOTHING__')
 };
 
 const formatTask = type => R.compose(R.merge({ type }), R.objOf('result'));

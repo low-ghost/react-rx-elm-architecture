@@ -61,7 +61,7 @@ export const update = createReducer({
 
     return [
       { ...model, gifList: newGifList },
-      Effects.batch(...fxList)
+      Effects.batch(...fxList),
     ];
 
   },
@@ -77,9 +77,10 @@ const inputStyle = {
 
 // elementView : Signal.Address Action -> (Int, RandomGif.Model) -> Html
 function ElementView({ address$, id, model }) {
-  return <RandomGif.View
-    address$={forwardTo(address$, SUB_MSG, { id })}
-    model={model} />;
+  return RandomGif.View({
+    address$: forwardTo(address$, SUB_MSG, { id }),
+    model
+  });
 }
 
 
