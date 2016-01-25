@@ -73,3 +73,13 @@ export const Effects = {
   }, x, xs),
   none
 };
+
+const formatTask = type => R.compose(R.merge({ type }), R.objOf('result'));
+
+export const toMaybe = (type, task$) => Rx.Observable.catch(
+  task$,
+  Rx.Observable.just(Effects.none)
+).map(formatTask(type));
+
+export const maybeWithDefault = (defaultVal, val) =>
+  val !== Effects.none ? val : defaultVal;

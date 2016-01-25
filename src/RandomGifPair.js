@@ -44,7 +44,11 @@ export const update = createReducer({
     const { id: msgId, action: msg } = action;
     const subUpdate = ({ id, model: randomGif }) => {
       if (id === msgId) {
-        let [ newRandomGif, fx ] = RandomGif.update(msg, randomGif);
+        //let [ newRandomGif, fx ] = RandomGif.update(msg, randomGif);
+        const x = RandomGif.update(msg, randomGif);
+        console.log('sub', x)
+        const newRandomGif = x[0];
+        const fx = x[1];
         return [
           { id, model: newRandomGif },
           Effects.map(SUB_MSG, fx, { id }),
@@ -61,7 +65,7 @@ export const update = createReducer({
 
     return [
       { ...model, gifList: newGifList },
-      Effects.batch(...fxList)
+      Effects.batch(...fxList),
     ];
 
   },
