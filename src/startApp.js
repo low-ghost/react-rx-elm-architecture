@@ -4,9 +4,9 @@ import R from 'ramda';
 import mixin from 'react-mixin';
 import { StateStreamMixin } from 'rx-react';
 
-export function dispatch(address$, type) {
-  return () => address$.onNext({ type });
-}
+export const dispatch = R.curry(function dispatch(address$, type, args) {
+  return address$.onNext({ type, ...args });
+});
 
 export function forwardTo(address$, type, args = {}){
   let forward$ = new Rx.Subject();
@@ -63,7 +63,13 @@ export default class StartApp extends Component {
 // TODO: better none type
 const none = 0;
 export const Effects = {
-  map: (type, f) => f !== none ? f.map(action => ({ type, action })) : none,
-  batch: (x, ...xs) => R.reduce((acc, fn) => acc.merge(fn), x, xs),
+  map: (type, f, args = {}) => f !== none ? f.map(action => ({ type, action, ...args })) : none,
+  batch: (x, ...xs) => R.reduce((acc, fn) => {
+    if (acc !== none && fn !== none)
+      return acc.merge(fn);
+    if (fn !== none)
+      return fn;
+    return acc;
+  }, x, xs),
   none
 };

@@ -69,7 +69,7 @@ export function View({ address$, model }) {
     <div style={{ width: 200 }}>
       <h2 style={headerStyle}>{model.topic}</h2>
       <img style={imgStyle} />
-      <button onClick={() => dispatch(address$, REQUEST_MORE, void 0)}>More Please</button>
+      <button onClick={dispatch(address$, REQUEST_MORE)}>More Please</button>
     </div>
   );
 }

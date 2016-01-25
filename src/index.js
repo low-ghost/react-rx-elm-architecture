@@ -5,5 +5,5 @@ import { init, update, View } from './RandomGifPair';
 
 
 render(
-  <StartApp init={init("funny cats", "funny dogs")} update={update} View={View}/>,
+  <StartApp init={init()} update={update} View={View}/>,
   document.getElementById('root'));
