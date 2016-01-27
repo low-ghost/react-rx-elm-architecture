@@ -4,8 +4,8 @@ import R from 'ramda';
 import mixin from 'react-mixin';
 import { StateStreamMixin } from 'rx-react';
 
-export const dispatch = R.curry(function dispatch(address$, type, args) {
-  return address$.onNext({ type, ...args });
+export const dispatch = R.curry(function dispatch(address$, action) {
+  return address$.onNext(action);
 });
 
 export function forwardTo(address$, type, args = {}){
@@ -31,6 +31,12 @@ export function createReducer(handlers) {
       : state;
 };
 
+export function composeUpdate(...middlewares) {
+  return update => middlewares.length > 0
+    ? R.compose(...middlewares)(update)
+    : update;
+}
+
 @mixin.decorate(StateStreamMixin)
 export default class StartApp extends Component {
 
@@ -39,13 +45,14 @@ export default class StartApp extends Component {
     const { update, init } = this.props;
 
     const address$ = new Rx.Subject();
+
     return Rx.Observable.just(init())
       .merge(address$)
       //-- updateStep : action -> (model, Effects action) -> (model, Effects action)
       .scan(([ model, _ ], action) => update(action, model))
       .map(([ model, effects ]) => {
         if (effects instanceof Rx.Observable) {
-          effects.subscribe(r => address$.onNext({ ...r }));
+          effects.subscribe(dispatch(address$));
         }
         return ({ address$, model });
       });

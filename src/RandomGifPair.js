@@ -100,8 +100,8 @@ export class View extends Component {
       this.onChange$.map(R.path(['target', 'value'])),
     ).map(value =>
       value === 13
-        ? dispatch(address$, CREATE, {})
-        : dispatch(address$, TOPIC, { topic: value }))
+        ? dispatch(address$, { type: CREATE })
+        : dispatch(address$, { type: TOPIC, topic: value }))
     .subscribe()
   }
 

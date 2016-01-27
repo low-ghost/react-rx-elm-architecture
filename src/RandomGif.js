@@ -16,6 +16,29 @@ export let init = topic => () => [{
   topic,
 }, getRandomGif(topic)];
 
+let count = 0;
+
+/**
+ * Minor difference as response.json is a promise.
+ * This incarnation throws an error every 4 iterations,
+ * but maybeWithDefault intentionally swallows it
+ * and leaves the old model in place
+ *
+ * randomUrl : String -> Effects Action
+ */
+function randomUrl(response) {
+  return response.json()
+    .then(json => {
+      count++;
+      if (count % 4 === 0)
+        throw new Error("Four sounds like the word for death in Mandarin");
+      else
+        return json;
+    });
+}
+
+const decodeUrl = R.path(['data', 'image_url']);
+
 //getRandomGif : String -> Effects Action
 export function getRandomGif(topic) {
   const encodedTopic = encodeURIComponent(topic);
@@ -24,23 +47,9 @@ export function getRandomGif(topic) {
     Rx.Observable.just()
       .flatMap(
         fetch(`http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=${encodedTopic}`))
-      .flatMap(decodeUrl));
+      .flatMap(randomUrl)
+      .map(decodeUrl));
 };
-
-var x = 0;
-//minor difference as json is a promise
-//decodeUrl : String -> Effects Action
-function decodeUrl(response) {
-  return response.json()
-    .then((r) => {
-      x++;
-      if (x % 3 === 0)
-        throw new Error("massive error");
-      else
-        return r;
-    })
-    .then(R.path(['data', 'image_url']));
-}
 
 //type Action = RequestMore | NewGif
 const REQUEST_MORE = 'REQUEST_MORE';
@@ -83,7 +92,7 @@ export function View({ address$, model }) {
     <div style={{ width: 200 }}>
       <h2 style={headerStyle}>{model.topic}</h2>
       <img style={imgStyle} />
-      <button onClick={() => dispatch(address$, REQUEST_MORE, void 0)}>More Please</button>
+      <button onClick={() => dispatch(address$, { type: REQUEST_MORE })}>More Please</button>
     </div>
   );
 }
