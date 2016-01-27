@@ -83,6 +83,15 @@ function ElementView({ address$, id, model }) {
   });
 }
 
+//action creators
+const create = () => ({ type: CREATE });
+const topic = value => ({ type: TOPIC, topic: value });
+
+
+const bindActionCreators = R.curry(function bindActionCreators(address$, actionCreators) {
+  return R.map(val => (...args) =>
+    dispatch(address$, val(...args)))(actionCreators);
+});
 
 // view : Signal.Address Action -> Model -> Html
 export class View extends Component {
@@ -95,13 +104,15 @@ export class View extends Component {
 
     const { address$, model } = this.props;
 
+    const { create: boundCreate, topic: boundTopic } = bindActionCreators(address$, { create, topic });
+
     this.disposable$ = Rx.Observable.merge(
       this.onKeyDown$.map(R.path(['keyCode'])).filter(R.equals(13)),
       this.onChange$.map(R.path(['target', 'value'])),
     ).map(value =>
       value === 13
-        ? dispatch(address$, { type: CREATE })
-        : dispatch(address$, { type: TOPIC, topic: value }))
+        ? boundCreate()
+        : boundTopic(value))
     .subscribe()
   }
 
